@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Control de Obesidad y Salud</title>
+
+<link rel="stylesheet" href="style.css">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+<header>
+    <h1>🏥 Sistema de Control de Obesidad</h1>
+    <p>Calcula tu IMC, peso ideal y recibe recomendaciones personalizadas</p>
+
+    <button id="modoOscuro">
+        🌙 Modo Oscuro
+    </button>
+</header>
+
+<main>
+
+<section class="card">
+
+<h2>Información sobre la Obesidad</h2>
+
+<p>
+La obesidad es una enfermedad crónica caracterizada por una acumulación excesiva
+de grasa corporal que puede afectar negativamente la salud.
+</p>
+
+<h3>Riesgos</h3>
+
+<ul>
+<li>Diabetes tipo 2</li>
+<li>Hipertensión arterial</li>
+<li>Enfermedades cardíacas</li>
+<li>Problemas respiratorios</li>
+<li>Dolor articular</li>
+</ul>
+
+</section>
+
+<section class="card">
+
+<h2>Calculadora de Salud</h2>
+
+<div class="form-group">
+<label>Nombre</label>
+<input type="text" id="nombre">
+</div>
+
+<div class="form-group">
+<label>Edad</label>
+<input type="number" id="edad">
+</div>
+
+<div class="form-group">
+<label>Sexo</label>
+
+<select id="sexo">
+<option value="hombre">Hombre</option>
+<option value="mujer">Mujer</option>
+</select>
+</div>
+
+<div class="form-group">
+<label>Peso (kg)</label>
+<input type="number" id="peso">
+</div>
+
+<div class="form-group">
+<label>Altura (m)</label>
+<input type="number" step="0.01" id="altura">
+</div>
+
+<div class="form-group">
+<label>Peso Meta (kg)</label>
+<input type="number" id="meta">
+</div>
+
+<button onclick="calcular()">
+Analizar Salud
+</button>
+
+<button onclick="window.print()">
+📄 Exportar PDF
+</button>
+
+</section>
+
+<section class="card" id="resultado" style="display:none;">
+
+<h2>Resultados</h2>
+
+<p id="saludo"></p>
+<p id="imc"></p>
+<p id="estado"></p>
+<p id="pesoIdeal"></p>
+<p id="calorias"></p>
+<p id="metaTexto"></p>
+
+<div class="barra-container">
+<div id="barra"></div>
+</div>
+
+<h3>Recomendaciones</h3>
+<ul id="recomendaciones"></ul>
+
+<h3>Menú Recomendado</h3>
+<div id="menuSaludable"></div>
+
+</section>
+
+<section class="card">
+
+<h2>📈 Evolución del Peso</h2>
+
+<canvas id="graficoPeso"></canvas>
+
+</section>
+
+<section class="card">
+
+<h2>📋 Historial</h2>
+
+<table>
+
+<thead>
+<tr>
+<th>Fecha</th>
+<th>Peso</th>
+<th>IMC</th>
+</tr>
+</thead>
+
+<tbody id="tablaHistorial">
+</tbody>
+
+</table>
+
+</section>
+
+</main>
+
+<script src="script.js"></script>
+
+</body>
+</html>
