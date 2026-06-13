@@ -1,153 +1,500 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Control de Obesidad y Salud</title>
-
-<link rel="stylesheet" href="style.css">
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitLife Pro</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-
 <body>
 
-<header>
-    <h1>🏥 Sistema de Control de Obesidad</h1>
-    <p>Calcula tu IMC, peso ideal y recibe recomendaciones personalizadas</p>
+<!-- NOTIFICACIONES TOAST -->
+<div id="toastContainer" class="toast-container"></div>
 
-    <button id="modoOscuro">
-        🌙 Modo Oscuro
-    </button>
-</header>
+<!-- LOGIN Y REGISTRO -->
+<div id="auth">
+    <div class="card" id="loginBox">
+        <h2>FitLife Pro - Login</h2>
+        <input type="text" id="loginNombre" placeholder="Nombre">
+        <div class="password-container">
+            <input type="password" id="loginPass" placeholder="Contraseña">
+            <button type="button" class="btn-eye" onclick="togglePassword('loginPass', this)">👁️</button>
+        </div>
+        <button onclick="login()">Entrar</button>
+        <p onclick="mostrarRegistro()" class="link">Crear cuenta</p>
+    </div>
 
-<main>
+    <div class="card hidden" id="registroBox">
+        <h2>Crear Cuenta</h2>
+        <input type="text" id="regNombre" placeholder="Nombre">
+        <div class="password-container">
+            <input type="password" id="regPass" placeholder="Contraseña">
+            <button type="button" class="btn-eye" onclick="togglePassword('regPass', this)">👁️</button>
+        </div>
+        <button onclick="registro()">Registrarse</button>
+        <p onclick="mostrarLogin()" class="link">Ya tengo cuenta</p>
+    </div>
+</div>
+
+<!-- APLICACIÓN PRINCIPAL -->
+<div id="app" class="app-estructura hidden">
+    
+    <!-- NAVEGACIÓN LATERAL (SIDEBAR) -->
+    <nav class="sidebar">
+        <div class="sidebar-logo"><span>🥗</span> FitLife Pro</div>
+        <div class="sidebar-menu">
+            <button class="nav-item activo" onclick="cambiarPestaña('pestaña-dashboard', this)">📊 Dashboard</button>
+            <button class="nav-item" onclick="cambiarPestaña('pestaña-nutricion', this)">🍎 Macro-Scanner</button>
+            <button class="nav-item" onclick="cambiarPestaña('pestaña-entrenamiento', this)">📅 Rutinas Semanales</button>
+            <button class="nav-item" onclick="cambiarPestaña('pestaña-mente', this)">🧘‍♂️ Mente Zen</button>
+            <button class="nav-item" id="nav-obesidad-btn" onclick="cambiarPestaña('pestaña-obesidad', this)">🩺 Salud y Obesidad</button>
+            <button class="nav-item" onclick="cambiarPestaña('pestaña-perfil', this)">🧔 Mi Perfil</button>
+        </div>
+        <div class="sidebar-footer">
+            <button id="btnDarkMode" onclick="toggleDarkMode()" class="btn-toggle">🌙 Modo Oscuro</button>
+            <button onclick="logout()" class="btn-danger-mini">Cerrar Sesión</button>
+        </div>
+    </nav>
+
+    <!-- CONTENIDO DE LA APP -->
+    <div class="app-contenido">
+        <header class="app-header-top">
+            <div>
+                <p id="bienvenida" class="texto-bienvenida"></p>
+                <p class="subtexto">¡Tu ecosistema fitness definitivo!</p>
+            </div>
+            <div class="racha-container">
+                <span class="racha-fuego">🔥</span>
+                <div class="racha-info">
+                    <span id="contadorRacha" class="racha-numero">0</span>
+                    <span class="racha-etiqueta">Días Seguidos</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="container">
+            
+            <!-- PESTAÑA 1: DASHBOARD -->
+            <div id="pestaña-dashboard" class="seccion-pestaña">
+                <!-- RETO SEMANAL DE LA COMUNIDAD -->
+                <section class="card reto-semanal-card">
+                    <div class="reto-header">
+                        <span class="reto-badge">⚡ RETO DE LA SEMANA</span>
+                        <h3 id="retoTitulo">Cargando desafío...</h3>
+                        <p id="retoDescripcion" class="subtexto" style="margin-top:5px;"></p>
+                    </div>
+                    <div class="barra" style="margin: 10px 0 5px 0; height:12px;"><div id="progresoReto" style="background:#f59e0b;"></div></div>
+                    <p id="retoEstadoTexto" style="font-size:12px; font-weight:bold; text-align:right; color:var(--subtext-color);">0% Completado</p>
+                </section>
+
+                <!-- Logros y Medallas -->
+                <section class="card">
+                    <h2>🏆 Tus Logros y Medallas</h2>
+                    <div class="logros-grid">
+                        <div class="logro-card bloqueado" id="logroPeso">
+                            <span class="logro-icono">⚖️</span>
+                            <h4>Primer Registro</h4>
+                            <p>Registra tu primer peso en el historial.</p>
+                        </div>
+                        <div class="logro-card bloqueado" id="logroAgua">
+                            <span class="logro-icono">🐳</span>
+                            <h4>Súper Hidratado</h4>
+                            <p>Alcanza la meta de 2000ml de agua.</p>
+                        </div>
+                        <div class="logro-card bloqueado" id="logroHabitos">
+                            <span class="logro-icono">⚡</span>
+                            <h4>Día Perfecto</h4>
+                            <p>Completa todas tus tareas saludables.</p>
+                        </div>
+                        <div class="logro-card bloqueado" id="logroMente">
+                            <span class="logro-icono">🌌</span>
+                            <h4>Iluminado</h4>
+                            <p>Completa una sesión guiada por voz.</p>
+                        </div>
+                        <div class="logro-card bloqueado" id="logroRetoMedalla">
+                            <span class="logro-icono">👑</span>
+                            <h4>Héroe FitLife</h4>
+                            <p>Supera el reto comunitario de la semana.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Hidratación -->
+                <section class="card">
+                    <h2>💧 Control de Hidratación</h2>
+                    <p id="textoAgua" class="subtexto-grande">Hoy has tomado: 0 / 2000 ml</p>
+                    <div class="barra-agua"><div id="progresoAgua"></div></div>
+                    <div class="botones-agua">
+                        <button onclick="añadirAgua(250)" class="btn-agua">🥛 +250 ml</button>
+                        <button onclick="añadirAgua(500)" class="btn-agua">🍾 +500 ml</button>
+                        <button onclick="reiniciarAgua()" class="btn-danger-mini">Reiniciar</button>
+                    </div>
+                </section>
+
+                <!-- Checklist Hábitos -->
+                <section class="card">
+                    <h2>📋 Hábitos Saludables Diarios</h2>
+                    <div class="habitos-lista">
+                        <label class="habito-item"><input type="checkbox" id="habitoSueno" onchange="verificarHabitos()"> 🛌 Dormir 7-8 horas de calidad</label>
+                        <label class="habito-item"><input type="checkbox" id="habitoComida" onchange="verificarHabitos()"> 🍎 Evitar comidas procesadas/azúcares</label>
+                        <label class="habito-item"><input type="checkbox" id="habitoEstirar" onchange="verificarHabitos()"> 🧘‍♂️ Hacer estiramientos o meditar 10 min</label>
+                    </div>
+                </section>
 
 <section class="card">
+    <h2>📋 Menú Diario y Gasto por Ocupación</h2>
+    <p class="subtexto" style="margin-bottom: 15px;">Selecciona tu rol para ver ideas de comidas con ingredientes que siempre tienes en casa y tu gasto de energía diario.</p>
+    
+    <div style="margin-bottom: 15px;">
+        <label for="selectOcupacion" style="font-size: 13px; font-weight: bold; display: block; margin-bottom: 5px;">Selecciona tu Ocupación:</label>
+        <select id="selectOcupacion" onchange="actualizarGuiaOcupacion()" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 14px; cursor: pointer;">
+            <option value="estudiante">🎓 Estudiante (Rendimiento Mental y Exámenes)</option>
+            <option value="profesor">🧑‍🏫 Profesor (Energía para el Aula y Cuidado de la Voz)</option>
+            <option value="ama_casa">🏡 Ama de Casa (Resistencia para Labores del Hogar)</option>
+            <option value="obrero">🏗️ Obrero / Trabajador Manual (Alta Fuerza y Desgaste Físico)</option>
+            <option value="general">🌍 General / Flexible (Rutina Diaria Equilibrada)</option>
+        </select>
+    </div>
 
-<h2>Información sobre la Obesidad</h2>
+    <div id="detalleOcupacionBox" style="margin-top: 15px; border-left: 4px solid var(--perfil-accent); padding-left: 12px;">
+        <h3 id="ocupacionTitulo" style="font-size: 16px; margin-bottom: 8px;">Cargando rol...</h3>
+        
+        <div style="background: var(--item-bg); padding: 10px; border-radius: 6px; margin-bottom: 15px; border: 1px solid var(--border-color);">
+            <p style="font-size: 13px; line-height: 1.5;"><span id="ocupacionGasto"></span></p>
+        </div>
 
-<p>
-La obesidad es una enfermedad crónica caracterizada por una acumulación excesiva
-de grasa corporal que puede afectar negativamente la salud.
-</p>
-
-<h3>Riesgos</h3>
-
-<ul>
-<li>Diabetes tipo 2</li>
-<li>Hipertensión arterial</li>
-<li>Enfermedades cardíacas</li>
-<li>Problemas respiratorios</li>
-<li>Dolor articular</li>
-</ul>
-
+        <h4 style="font-size: 14px; margin-bottom: 10px; color: var(--perfil-accent); font-weight: bold;">🍽️ Propuesta de Menú Casero Económico:</h4>
+        
+        <div id="menuComedasContainer" style="display: flex; flex-direction: column; gap: 10px;">
+            </div>
+    </div>
 </section>
 
-<section class="card">
+                <!-- Calculadora Metabólica e IMC -->
+                <section class="card">
+                    <h2>Análisis Corporal Completo</h2>
+                    <p class="subtexto" style="margin-bottom: 12px;">Ingresa tus datos del día para cruzar la información con tu metabolismo basal.</p>
+                    <div class="perfil-grid-inputs" style="margin-bottom:0;">
+                        <input type="number" id="peso" placeholder="Peso actual (kg)" step="0.1">
+                        <input type="number" id="meta" placeholder="Peso meta (kg)" step="0.1">
+                    </div>
+                    <button onclick="calcularIMC()" style="margin-top:15px;">Analizar Composición Corporal</button>
+                </section>
 
-<h2>Calculadora de Salud</h2>
+                <!-- Resultados Dinámicos Combinados Científicos -->
+                <section class="card hidden" id="resultado">
+                    <h2>📋 Reporte del Análisis Corporal</h2>
+                    
+                    <div class="resultados-destacados-grid">
+                        <div class="res-box"><h4 id="imc">IMC: --</h4><p id="estado">Estado: --</p></div>
+                        <div class="res-box destacado-calorias"><h4>🔥 Balance Calórico</h4><p id="metabolismoTexto">Configura tu perfil para calcular...</p></div>
+                    </div>
 
-<div class="form-group">
-<label>Nombre</label>
-<input type="text" id="nombre">
+                    <p id="metaTexto" style="margin-top: 15px; font-weight: bold; color: var(--perfil-accent);"></p>
+                    <div class="barra"><div id="progreso"></div></div>
+                    
+                    <h3>Recomendaciones Nutricionales</h3>
+                    <ul id="recomendaciones"></ul>
+                </section>
+
+                <!-- Gráfico de Evolución -->
+                <section class="card">
+                    <h2>Progreso Temporal de Peso</h2>
+                    <canvas id="grafico"></canvas>
+                    <div style="overflow-x: auto; margin-top:20px;">
+                        <table id="tablaHistorial">
+                            <thead><tr><th>Fecha</th><th>Peso</th><th>IMC</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <button onclick="borrarHistorial()" class="btn-danger" style="margin-top:15px;">Limpiar Historial</button>
+                </section>
+            </div>
+
+            <!-- PESTAÑA 2: MACRO-SCANNER -->
+            <div id="pestaña-nutricion" class="seccion-pestaña hidden">
+                <section class="card">
+                    <h2>🍎 Escáner de Macronutrientes por IA</h2>
+                    <p class="subtexto">Escribe libremente lo que almorzaste o cenaste y nuestro analizador estimará tus macros al instante.</p>
+                    <textarea id="scannerInput" rows="3" placeholder="Ej: Me comí una pechuga de pollo asada con una taza de arroz cocido y medio aguacate..."></textarea>
+                    <button onclick="escanearAlimento()" style="margin-top:10px;">Analizar Plato de Comida</button>
+
+                    <div id="resultadoScanner" class="hidden" style="margin-top:25px;">
+                        <h3>📊 Desglose Estimado del Plato</h3>
+                        <div class="macros-container-grid">
+                            <div class="macro-box kc"><h5>🔥 Calorías</h5><p id="scCalorias">0 kcal</p></div>
+                            <div class="macro-box pt"><h5>🍗 Proteína</h5><p id="scProteina">0g</p></div>
+                            <div class="macro-box ch"><h5>🍚 Carbs</h5><p id="scCarbs">0g</p></div>
+                            <div class="macro-box gr"><h5>🥑 Grasas</h5><p id="scGrasas">0g</p></div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="card hidden" id="seccionMenus">
+                    <h2>Tu Guía Base de Alimentación Sugerida</h2>
+                    <p id="infoNutricional" class="subtexto"></p>
+                    <div class="menu-grid">
+                        <div class="menu-item"><strong>Desayuno:</strong> <span id="menuDesayuno"></span></div>
+                        <div class="menu-item"><strong>Almuerzo:</strong> <span id="menuAlmuerzo"></span></div>
+                        <div class="menu-item"><strong>Merienda:</strong> <span id="menuMerienda"></span></div>
+                        <div class="menu-item"><strong>Cena:</strong> <span id="menuCena"></span></div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- PESTAÑA 3: ENTRENAMIENTO -->
+            <div id="pestaña-entrenamiento" class="seccion-pestaña hidden">
+                <section class="card">
+                    <h2>📅 Planificador Semanal (Workout Split)</h2>
+                    <p class="subtexto">Diseña tu enfoque de entrenamiento estructural para la semana.</p>
+                    <div class="split-semanal-grid">
+                        <div class="dia-split-box"><span>Lunes</span><input type="text" id="split-lun" placeholder="Ej: Pierna Completa"></div>
+                        <div class="dia-split-box"><span>Martes</span><input type="text" id="split-mar" placeholder="Ej: Torso / Pecho"></div>
+                        <div class="dia-split-box"><span>Miércoles</span><input type="text" id="split-mie" placeholder="Ej: Descanso Activo"></div>
+                        <div class="dia-split-box"><span>Jueves</span><input type="text" id="split-jue" placeholder="Ej: Pierna / Glúteos"></div>
+                        <div class="dia-split-box"><span>Viernes</span><input type="text" id="split-vie" placeholder="Ej: Espalda / Hombros"></div>
+                        <div class="dia-split-box"><span>Sábado</span><input type="text" id="split-sab" placeholder="Ej: Cardio / HIIT"></div>
+                        <div class="dia-split-box"><span>Domingo</span><input type="text" id="split-dom" placeholder="Ej: Descanso"></div>
+                    </div>
+                    <button onclick="guardarSplitSemanal()" style="margin-top:15px; background:var(--perfil-accent);">💾 Guardar Estructura Semanal</button>
+                </section>
+
+                <section class="card">
+                    <h2>🏋️‍♂️ Registrar Entrenamiento de Hoy</h2>
+                    <div class="form-ejercicio">
+                        <select id="tipoEjercicio">
+                            <option value="Correr (Ritmo moderado)">🏃‍♂️ Correr</option>
+                            <option value="Caminar rápido">🚶‍♂️ Caminar rápido</option>
+                            <option value="Ciclismo">🚴‍♂️ Ciclismo</option>
+                            <option value="Entrenamiento de fuerza/Pesas">🏋️‍♂️ Pesas / Fuerza</option>
+                            <option value="Natación">🏊‍♂️ Natación</option>
+                            <option value="Cardio / HIIT">🔥 HIIT / Funcional</option>
+                        </select>
+                        <input type="number" id="duracionEjercicio" placeholder="Duración (minutos)" min="1">
+                        <button onclick="registrarEjercicio()">Añadir Sesión</button>
+                    </div>
+                    <h3 style="margin-top: 20px; margin-bottom: 10px;">Entrenamientos Completados Hoy</h3>
+                    <ul id="listaEjercicios" class="lista-ejercicios"></ul>
+                </section>
+            </div>
+
+            <!-- PESTAÑA 4: MENTE ZEN -->
+            <div id="pestaña-mente" class="seccion-pestaña hidden">
+                <section class="card" style="text-align: center;">
+                    <h2>🧘‍♂️ Temporizador Mente Zen con Coach de Voz</h2>
+                    <p class="subtexto" style="margin-bottom:20px;">Controlar el cortisol evita el estancamiento metabólico. Sube el volumen de tu equipo, nuestro Coach te guiará en la respiración.</p>
+                    
+                    <div class="timer-circulo">
+                        <span id="timerDisplay">10:00</span>
+                    </div>
+
+                    <p id="instruccionVozTexto" style="font-weight: bold; color: #10b981; height: 24px; margin-bottom: 10px;">Listo para iniciar</p>
+                    
+                    <div class="timer-controles" style="display:flex; gap:10px; justify-content:center;">
+                        <button onclick="iniciarTimerZen()" id="btnTimerStart" style="max-width:140px; background:#10b981;">Iniciar Sesión</button>
+                        <button onclick="pausarTimerZen()" style="max-width:140px; background:#f59e0b;">Pausar</button>
+                        <button onclick="reiniciarTimerZen()" style="max-width:140px; background:#ef4444;">Reiniciar</button>
+                    </div>
+                </section>
+            </div>
+
+            <!-- PESTAÑA 5: CLINICA DE SALUD Y OBESIDAD EXHAUSTIVA -->
+            <div id="pestaña-obesidad" class="seccion-pestaña hidden">
+                <section class="card info-obesidad-card">
+                    <div class="obesidad-hero">
+                        <span class="obesidad-badge">Clínica de Prevención Avanzada</span>
+                        <h2>Entendiendo la Obesidad como Enfermedad Crónica</h2>
+                        <p class="subtexto-premium">La obesidad es una condición médica compleja, crónica y multifactorial, caracterizada por una acumulación excesiva de tejido adiposo que actúa como un órgano endocrino hiperactivo, segregando citoquinas proinflamatorias. No es un problema estético ni una falta de fuerza de voluntad; es una alteración neuroendocrina regulada por el eje hipotálamo-adiposo.</p>
+                    </div>
+
+                    <!-- NUEVO INTERACTIVO 1: SEMÁFORO CLÍNICO AUTOMATIZADO -->
+                    <div class="alert-box-semaforo status-neutral" id="semaforoClinicoBox">
+                        <div style="display: flex; gap: 15px; align-items: center;">
+                            <div class="semaforo-luz" id="semaforoLuzColor"></div>
+                            <div>
+                                <h4 id="semaforoTitulo">Monitoreo Clínico de IMC Desactivado</h4>
+                                <p id="semaforoDescripcion" style="font-size: 13px; margin-top: 3px;">Por favor, ingresa y analiza tu peso actual en la pestaña de <strong>Dashboard</strong> para activar tu protocolo adaptativo personalizado.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- NUEVO INTERACTIVO 2: CALCULADOR DE RIESGO CARDIOVASCULAR (ICA) -->
+                    <div class="obesidad-seccion-bloque calculador-visceral-container">
+                        <h3>🩸 Diagnóstico de Grasa Visceral (Índice Cintura-Altura)</h3>
+                        <p class="subtexto" style="margin-bottom: 12px;">El IMC puede fallar si tienes masa muscular alta. El ICA mide con total precisión tu tejido graso visceral y riesgo de infarto cardíaco.</p>
+                        <div class="perfil-grid-inputs" style="margin-bottom:0;">
+                            <input type="number" id="cinturaCm" placeholder="Medida de tu cintura (cm)" min="30" max="250">
+                            <button onclick="calcularICA()" style="background: #ef4444; margin-top: 8px; height: 42px;">Calcular Riesgo Arterial</button>
+                        </div>
+                        <div id="resultadoICA" class="hidden text-resultado-ica"></div>
+                    </div>
+
+                    <!-- INFORMACIÓN CLÍNICA DETALLADA (OMS) -->
+                    <div class="obesidad-seccion-bloque">
+                        <h3>📊 Clasificación Oficial Exhaustiva del Peso (Criterio OMS)</h3>
+                        <p class="subtexto" style="margin-bottom:10px;">Rangos mundiales de clasificación basados en el Índice de Masa Corporal.</p>
+                        <div class="imc-tabla-educativa">
+                            <div class="imc-fila-edu"><span class="rango-color azul"></span> <span><strong>Menos de 18.5:</strong> Bajo Peso (Riesgo de deficiencia de nutrientes)</span></div>
+                            <div class="imc-fila-edu"><span class="rango-color verde"></span> <span><strong>18.5 – 24.9:</strong> Peso Saludable o Normopeso (Homeostasis fisiológica)</span></div>
+                            <div class="imc-fila-edu"><span class="rango-color amarillo"></span> <span><strong>25.0 – 29.9:</strong> Sobrepeso (Fase pre-clínica de acumulación lipídica)</span></div>
+                            <div class="imc-fila-edu"><span class="rango-color naranja"></span> <span><strong>30.0 – 34.9:</strong> Obesidad Clase I (Moderada - Inicio de resistencia insulínica)</span></div>
+                            <div class="imc-fila-edu"><span class="rango-color rojo-claro"></span> <span><strong>35.0 – 39.9:</strong> Obesidad Clase II (Severa - Alto riesgo de comorbilidades)</span></div>
+                            <div class="imc-fila-edu"><span class="rango-color rojo-oscuro"></span> <span><strong>40.0 o más:</strong> Obesidad Clase III (Mórbida - Estado inflamatorio severo)</span></div>
+                        </div>
+                    </div>
+
+                    <div class="obesidad-seccion-bloque">
+                        <h3>🚨 Comorbilidades y Riesgos Sistémicos Asociados</h3>
+                        <p class="subtexto" style="margin-bottom:10px;">La exposición prolongada al exceso de grasa visceral desencadena fallos en múltiples sistemas corporales:</p>
+                        <ul class="lista-clinica">
+                            <li><strong>Enfermedades Cardiovasculares Avanzadas:</strong> Induce hipertensión arterial por rigidez vascular, cardiopatía isquémica, aterosclerosis y elevado riesgo de accidentes cerebrovasculares (ACV).</li>
+                            <li><strong>Síndrome Metabólico y Diabetes Tipo 2:</strong> El exceso de ácidos grasos libres bloquea los receptores GLUT4 celulares, desencadenando resistencia severa a la insulina y agotamiento del páncreas.</li>
+                            <li><strong>Degeneración Osteoarticular Directa:</strong> Sobrecarga mecánica destructiva en articulaciones de soporte (rodillas, cadera, columna lumbar), acelerando la osteoartritis prematura.</li>
+                            <li><strong>Apnea Obstructiva del Sueño (AOS):</strong> La acumulación de tejido graso perifaríngeo colapsa mecánicamente las vías respiratorias durante la noche, provocando hipoxia intermitente y daño neuronal latente.</li>
+                            <li><strong>Esteatosis Hepática No Alcohólica (Hígado Graso):</strong> Infiltración de triglicéridos en el tejido hepático, que puede evolucionar a fibrosis, cirrosis o hepatocarcinoma.</li>
+                        </ul>
+                    </div>
+
+                    <div class="obesidad-seccion-bloque pilar-destacado">
+                        <h3>🛡️ Pilares Médicos de Prevención y Tratamiento Científico</h3>
+                        <div class="pilares-grid">
+                            <div class="pilar-box">
+                                <h4>🍎 1. Nutrición Basada en Densidad Nutricional</h4>
+                                <p>Restricción severa de alimentos ultraprocesados hiperpalatables y azúcares simples. Priorizar el consumo de proteínas de alto valor biológico y fibra soluble para modular las hormonas de la saciedad (GLP-1 y PYY).</p>
+                            </div>
+                            <div class="pilar-box">
+                                <h4>🏋️‍♂️ 2. Prescripción del Ejercicio Físico</h4>
+                                <p>Combinación obligatoria de entrenamiento de fuerza (para preservar masa muscular magra y revertir la resistencia a la insulina) acoplado a cardio de base aeróbica para optimizar la flexibilidad metabólica mitocondrial.</p>
+                            </div>
+                            <div class="pilar-box">
+                                <h4>🛌 3. Regulación Neuroendocrina del Sueño</h4>
+                                <p>Dormir menos de 7 horas eleva de forma masiva la Grelina (hormona del hambre) y reduce la Leptina (hormona de la saciedad), forzando al cerebro a buscar comida densa en energía por vías de recompensa dopaminérgica.</p>
+                            </div>
+                            <div class="pilar-box">
+                                <h4>🧘‍♂️ 4. Intervención Conductual y Emocional</h4>
+                                <p>Desarrollar herramientas psicológicas para mitigar el comer emocional. El cortisol crónico producido por el estrés activa la enzima lipoproteína lipasa en el tejido adiposo visceral, promoviendo la ganancia de grasa en la zona del abdomen.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- NUEVO INTERACTIVO 3: GLOSARIO DE BIOMARKERS -->
+                    <div class="obesidad-seccion-bloque">
+                        <h3>🧠 Guía de Biomarcadores de Control Clínico</h3>
+                        <p class="subtexto" style="margin-bottom:12px;">Aprende a interpretar tus analíticas de sangre para evaluar tu salud real frente a la obesidad.</p>
+                        <div class="biomarkers-grid">
+                            <div class="biomarker-card"><h5>Glucosa en Ayunas</h5><p>Normal: &lt; 100 mg/dL<br>Riesgo: 100-125 mg/dL (Prediabetes)</p></div>
+                            <div class="biomarker-card"><h5>Triglicéridos</h5><p>Normal: &lt; 150 mg/dL<br>Riesgo: &gt; 150 mg/dL (Riesgo vascular)</p></div>
+                            <div class="biomarker-card"><h5>Colesterol HDL ("Bueno")</h5><p>Hombres: &gt; 40 mg/dL | Mujeres: &gt; 50 mg/dL<br>Bajo: Pérdida de protección arterial</p></div>
+                            <div class="biomarker-card"><h5>Presión Arterial</h5><p>Normal: 120/80 mmHg<br>Alta: &gt; 130/80 mmHg (Hipertensión)</p></div>
+                        </div>
+                    </div>
+
+                    <!-- NUEVO INTERACTIVO 4: MITOS VS REALIDADES (TARJETAS DESPLEGABLES) -->
+                    <div class="obesidad-seccion-bloque">
+                        <h3>🧬 Mitos vs. Realidades Científicas</h3>
+                        <p class="subtexto" style="margin-bottom:15px;">Haz clic sobre cada pregunta para revelar la verdad demostrada por la ciencia médica.</p>
+                        <div class="mitos-container-lista">
+                            <details class="mito-item-accordion">
+                                <summary class="mito-titulo-trigger">❌ ¿Sudar copiosamente o usar fajas térmicas quema más grasa corporal?</summary>
+                                <div class="mito-contenido-respuesta">
+                                    <p><strong>REALIDAD CIENTÍFICA:</strong> El sudor es exclusivamente un mecanismo de termorregulación para enfriar el cuerpo. Solo estás perdiendo agua y electrolitos que recuperarás inmediatamente al hidratarte. La grasa no se suda, se oxida dentro de las mitocondrias mediante procesos metabólicos celulares.</p>
+                                </div>
+                            </details>
+                            <details class="mito-item-accordion">
+                                <summary class="mito-titulo-trigger">❌ ¿Dejar de cenar o saltarse comidas es la forma óptima de revertir la obesidad?</summary>
+                                <div class="mito-contenido-respuesta">
+                                    <p><strong>REALIDAD CIENTÍFICA:</strong> Saltarse comidas sin un control estructurado genera un hambre voraz compensatoria, elevando el riesgo de atracones nocturnos. Además, puede provocar una bajada en la tasa metabólica basal debido a la pérdida de masa muscular si no se cubren los requerimientos diarios de proteína.</p>
+                                </div>
+                            </details>
+                            <details class="mito-item-accordion">
+                                <summary class="mito-titulo-trigger">❌ ¿Existen alimentos milagrosos o quemadores de grasa que eliminan la obesidad?</summary>
+                                <div class="mito-contenido-respuesta">
+                                    <p><strong>REALIDAD CIENTÍFICA:</strong> Ningún alimento, té, ni pastilla de venta libre tiene el poder termogénico masivo para eliminar la grasa acumulada. El único factor real y sostenible es un déficit calórico controlado, acompañado de hábitos saludables prolongados en el tiempo.</p>
+                                </div>
+                            </details>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- PESTAÑA 6: PERFIL Y METABOLISMO CIENTÍFICO -->
+            <div id="pestaña-perfil" class="seccion-pestaña hidden">
+                <section class="card perfil-moderno-card">
+                    <div class="perfil-header-dinamico">
+                        <div class="avatar-circulo" id="avatarDinamico">🧔</div>
+                        <div>
+                            <h2>Mi Perfil Bio-Mecánico</h2>
+                            <p class="subtexto" style="margin-bottom:0;">Configura tus parámetros metabólicos de precisión científica</p>
+                        </div>
+                    </div>
+                    
+                    <div class="perfil-grid-inputs">
+                        <div class="input-grupo-moderno">
+                            <label class="label-moderno">Género Biológico</label>
+                            <div class="genero-ops-container">
+                                <div class="genero-opcion activa" id="opHombre" onclick="seleccionarGenero('hombre')">🙋‍♂️ Hombre</div>
+                                <div class="genero-opcion" id="opMujer" onclick="seleccionarGenero('mujer')">🙋‍♀️ Mujer</div>
+                            </div>
+                        </div>
+                        <div class="input-grupo-moderno">
+                            <label for="edad" class="label-moderno">Edad (Años)</label>
+                            <input type="number" id="edad" placeholder="Ej. 25" min="1" max="120">
+                        </div>
+                    </div>
+
+                    <div class="input-grupo-moderno">
+                        <label for="actividad" class="label-moderno">Nivel de Actividad Diaria</label>
+                        <select id="actividad">
+                            <option value="1.2">Sedentario (Poco o nada de ejercicio)</option>
+                            <option value="1.375">Ligero (Ejercicio suave 1-3 días/semana)</option>
+                            <option value="1.55">Moderado (Ejercicio intenso 3-5 días/semana)</option>
+                            <option value="1.725">Muy Activo (Deportista fuerte 6-7 días/semana)</option>
+                        </select>
+                    </div>
+
+                    <div class="input-grupo-moderno slider-wrapper">
+                        <div class="slider-header-labels">
+                            <label class="label-moderno">Altura Corporal</label>
+                            <span id="valorAlturaTexto" class="altura-badge-dinamica">1.70 m</span>
+                        </div>
+                        <input type="range" id="altura" min="1.20" max="2.20" step="0.01" value="1.70" oninput="actualizarSliderTexto(this.value)">
+                    </div>
+                    
+                    <button onclick="guardarPerfil()" class="btn-guardar-perfil">💾 Guardar Perfil y Sincronizar Calorías</button>
+                </section>
+
+                <!-- GALERÍA DE EVOLUCIÓN VISUAL -->
+                <section class="card">
+                    <h2>📈 Galería de Evolución Visual</h2>
+                    <p class="subtexto" style="margin-bottom:15px;">Sube tus fotos de control para monitorizar tus cambios físicos reales de forma privada.</p>
+                    <div class="inputs-fotos-galeria">
+                        <div class="upload-box-wrapper">
+                            <label>📸 Foto "Antes":</label>
+                            <input type="file" id="fotoAntesInput" accept="image/*" onchange="cargarImagenEvolucion('Antes')">
+                        </div>
+                        <div class="upload-box-wrapper">
+                            <label>📸 Foto "Después":</label>
+                            <input type="file" id="fotoDespuesInput" accept="image/*" onchange="cargarImagenEvolucion('Despues')">
+                        </div>
+                    </div>
+                    <div class="galeria-comparativa-grid">
+                        <div class="foto-marco"><p class="tag-foto">ANTES</p><img id="imgAntes" src="" class="hidden"></div>
+                        <div class="foto-marco"><p class="tag-foto">DESPUÉS</p><img id="imgDespues" src="" class="hidden"></div>
+                    </div>
+                </section>
+            </div>
+
+        </main> 
+
+<footer class="app-footer">
+    <p><strong>Creadores:</strong> Jhon, Kendry y Joseph</p>
+    <p>I.E. La Paz • Secundaria - 4C • Año de Creación: 2026</p>
+</footer>
+
+    </div>
 </div>
-
-<div class="form-group">
-<label>Edad</label>
-<input type="number" id="edad">
-</div>
-
-<div class="form-group">
-<label>Sexo</label>
-
-<select id="sexo">
-<option value="hombre">Hombre</option>
-<option value="mujer">Mujer</option>
-</select>
-</div>
-
-<div class="form-group">
-<label>Peso (kg)</label>
-<input type="number" id="peso">
-</div>
-
-<div class="form-group">
-<label>Altura (m)</label>
-<input type="number" step="0.01" id="altura">
-</div>
-
-<div class="form-group">
-<label>Peso Meta (kg)</label>
-<input type="number" id="meta">
-</div>
-
-<button onclick="calcular()">
-Analizar Salud
-</button>
-
-<button onclick="window.print()">
-📄 Exportar PDF
-</button>
-
-</section>
-
-<section class="card" id="resultado" style="display:none;">
-
-<h2>Resultados</h2>
-
-<p id="saludo"></p>
-<p id="imc"></p>
-<p id="estado"></p>
-<p id="pesoIdeal"></p>
-<p id="calorias"></p>
-<p id="metaTexto"></p>
-
-<div class="barra-container">
-<div id="barra"></div>
-</div>
-
-<h3>Recomendaciones</h3>
-<ul id="recomendaciones"></ul>
-
-<h3>Menú Recomendado</h3>
-<div id="menuSaludable"></div>
-
-</section>
-
-<section class="card">
-
-<h2>📈 Evolución del Peso</h2>
-
-<canvas id="graficoPeso"></canvas>
-
-</section>
-
-<section class="card">
-
-<h2>📋 Historial</h2>
-
-<table>
-
-<thead>
-<tr>
-<th>Fecha</th>
-<th>Peso</th>
-<th>IMC</th>
-</tr>
-</thead>
-
-<tbody id="tablaHistorial">
-</tbody>
-
-</table>
-
-</section>
-
-</main>
 
 <script src="script.js"></script>
-
 </body>
 </html>
